@@ -1,0 +1,26 @@
+general:
+    # Where save learning of ai
+    state_path: "state/"
+    # Time of speed (1x,1.4x,2x,..)
+    time_speed: 1
+    headless: false
+fish:
+    # Render fish render
+    render_sensor: false
+    # Fish Speed
+    speed: 100
+    # Initial fish energy
+    energy: 600
+    # Fish count
+    count: 5000
+    # Sensor count distributed over range
+    sensors: 11
+    # Range of sensor, -range to +range
+    range: 65.00
+    # Initial energy to increment on new generation
+    energy_inc: 10.00
+    # Control using keyboard
+    keyboard: true
+ai:
+    # Execution mode LEARN/RUN/DISABLED
+    mode: LEARN
