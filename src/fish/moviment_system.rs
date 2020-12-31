@@ -17,20 +17,26 @@ pub(crate) fn move_fish_forward(
     mut query: Query<(&mut Transform, &mut Fish)>,
 ) {
     for (mut t, mut fish) in query.iter_mut() {
-        let (axis, ang) = t.rotation.to_axis_angle();
 
-        let ang = match axis.z() > 0.0 {
-            true => -ang,
-            false => ang,
-        };
+        //Make sure is not dead
+        if fish.died_at.is_none() {
 
-        let delta_seconds = f32::min(0.1, time.delta_seconds) * config.general.time_speed;
-        let distance = delta_seconds * fish.speed;
-        fish.performed += distance;
-        t.translation += Vec3::new(distance * ang.sin(), distance * ang.cos(), 0.0);
+            let (axis, ang) = t.rotation.to_axis_angle();
 
-        //Swimming uses energy
-        fish.energy -= delta_seconds * fish.speed * 0.05;
+            let ang = match axis.z() > 0.0 {
+                true => -ang,
+                false => ang,
+            };
+    
+            let delta_seconds = f32::min(0.1, time.delta_seconds) * config.general.time_speed;
+            let distance = delta_seconds * fish.speed;
+            fish.performed += distance;
+            t.translation += Vec3::new(distance * ang.sin(), distance * ang.cos(), 0.0);
+    
+            //Swimming uses energy
+            fish.energy -= delta_seconds * fish.speed * 0.05;
+    
+        }
     }
 }
 
@@ -43,11 +49,16 @@ pub fn increase_speed(fish: &mut Fish) {
 }
 
 pub fn turn_fish(direction: &TurnFish, fish_transform: &mut Transform, fish: &mut Fish) {
-    match direction {
-        TurnFish::RIGHT => fish_transform.rotate(Quat::from_rotation_z(-TURN_ANGLE)),
-        TurnFish::LEFT => fish_transform.rotate(Quat::from_rotation_z(TURN_ANGLE)),
-    }
 
-    //Turn spends energy
-    fish.energy -= 20.0;
+    //Make sure is not dead
+    if fish.died_at.is_none() {
+        match direction {
+            TurnFish::RIGHT => fish_transform.rotate(Quat::from_rotation_z(-TURN_ANGLE)),
+            TurnFish::LEFT => fish_transform.rotate(Quat::from_rotation_z(TURN_ANGLE)),
+        }
+    
+        //Turn spends much energy
+        fish.energy -= 20.0;
+        }
+
 }

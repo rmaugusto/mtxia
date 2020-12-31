@@ -51,6 +51,8 @@ pub(crate) fn create_fishes(
     // Random initial position
     let water_idx = rng.gen_range(0, water_translator_ref.len());
 
+
+
     (0..to_create).for_each(|i| {
 
 
@@ -65,7 +67,7 @@ pub(crate) fn create_fishes(
                 transform: transform,
                 ..Default::default()
             })
-            .with(Fish::new(
+            .with( Fish::new(
                 i as i32,
                 config.fish.speed,
                 config.fish.energy,

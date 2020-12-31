@@ -26,6 +26,9 @@ pub struct Fish {
     pub ai_processor: Box<dyn AiProcessor + Sync + Send + 'static>,
 }
 
+pub struct FishMarkedToRemove {
+}
+
 pub struct AnimationEntity {
     reverse_index: bool,
 }

@@ -12,7 +12,7 @@ fish:
     # Initial fish energy
     energy: 600
     # Fish count
-    count: 5000
+    count: 2
     # Sensor count distributed over range
     sensors: 11
     # Range of sensor, -range to +range

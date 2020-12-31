@@ -54,7 +54,10 @@ fn main() {
         .add_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
         .add_resource(shared::gamedata::GameData {
             create_generation: true,
-            ..Default::default()
+            current_generation: Default::default(),
+            best_time: Default::default(),
+            map_data: Default::default(),
+            died_fishes: Vec::new()
         })
         .add_resource(config)
         //Create Stages
