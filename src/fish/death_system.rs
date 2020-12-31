@@ -1,4 +1,8 @@
-use std::{fs, path::Path, time::{Duration, Instant}};
+use std::{
+    fs,
+    path::Path,
+    time::{Duration, Instant},
+};
 
 use bevy::{ecs::QueryError, prelude::*};
 
@@ -22,19 +26,20 @@ pub fn send_fish_death_by_energy(mut query: Query<(Entity, &mut Fish)>) {
 
 pub fn poll_dead_fish(mut gd: ResMut<GameData>, config: Res<Config>) {
     if gd.died_fishes.len() as i32 == config.fish.count {
+
         gd.died_fishes
             .sort_by(|f1, f2| f2.performed.partial_cmp(&f1.performed).unwrap());
 
-
-        let mut gd_best_time:Option<Duration> = gd.best_time;
+        let mut gd_best_time: Option<Duration> = gd.best_time;
         let mut gd_create_generation = gd.create_generation;
         let gd_current_generation = gd.current_generation;
 
-        let mut i:usize = 0;
+        let mut i: usize = 0;
         for f in &mut gd.died_fishes {
-            
-            //Last fish died
+
+        //     //Last fish died
             if i <= BEST_RESULTS_SAVED_COUNT as usize {
+
                 let result_dir =
                     format!("{}{}", config.general.state_path, f.ai_processor.get_name());
 
@@ -44,25 +49,28 @@ pub fn poll_dead_fish(mut gd: ResMut<GameData>, config: Res<Config>) {
                 let best_str = format!("{}/{}_pos.yaml", result_dir, i);
                 let best_path = Path::new(&best_str);
 
-                gd_best_time = Some(f.create_at.elapsed());
 
                 if config.ai.mode == ModeEnum::LEARN {
                     f.ai_processor.save(best_path);
                 }
-                if i == 1 {
+
+                println!("i {} performed {} time {} idx {}", i ,f.performed, f.create_at.elapsed().as_millis(), f.index);
+                if i == 0 {
+                    gd_best_time = Some(f.create_at.elapsed());
+
                     let date = chrono::offset::Local::now();
                     println!(
-                        "[{}] - Gen {}, Best time: {:?}, dead by {}",
+                        "[{}] - Gen {}, Best time: {:?}, idx: {}, dead by {}",
                         date.format("[%H:%M:%S"),
                         gd_current_generation,
                         gd_best_time.unwrap().as_millis(),
+                        f.index,
                         if f.energy <= 0f32 {
                             "energy"
                         } else {
                             "collision"
                         }
                     );
-                    gd_create_generation = true;
                 }
             }
 
@@ -70,9 +78,8 @@ pub fn poll_dead_fish(mut gd: ResMut<GameData>, config: Res<Config>) {
         }
 
         gd.best_time = gd_best_time;
-        gd.create_generation = gd_create_generation;
+        gd.create_generation = true;
         gd.died_fishes.clear();
-
 
         // gd.died_fishes.iter_mut().enumerate().for_each(|(i, f)| {
         //     //Last fish died
@@ -135,8 +142,9 @@ pub fn recover_dead_fish(
             let removed_fish = mut_world.remove_one::<Fish>(res.0);
 
             if removed_fish.is_ok() {
+                let fish = removed_fish.unwrap();
                 let gd = resources.get_mut::<GameData>();
-                gd.unwrap().died_fishes.push(removed_fish.unwrap());
+                gd.unwrap().died_fishes.push(fish);
             }
         } else {
             break;
