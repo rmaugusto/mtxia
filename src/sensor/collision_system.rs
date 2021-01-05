@@ -3,21 +3,17 @@ use bevy::{
     tasks::{ComputeTaskPool, ParallelIterator},
 };
 
-use crate::{ground::{FloorTile, OtherTypeIntersection, HALF_TILE_SIZE, TILE_SIZE}, shared::{config::Config, gamedata::GameData}};
+use crate::ground::{FloorTile, OtherTypeIntersection, HALF_TILE_SIZE, TILE_SIZE};
 
 use super::{SensorDetectedEnum, SensorSet, SENSOR_REACH};
 
 pub fn detect_sensor_collision(
-    gd: Res<GameData>,
     pool: Res<ComputeTaskPool>,
     mut q_sensorset: Query<(&Transform, &mut SensorSet)>,
     q_floor: Query<(&Transform, &FloorTile, &OtherTypeIntersection)>,
 ) {
     q_sensorset.par_iter_mut(32).for_each(&pool, |(_, mut ss)| {
-    // q_sensorset.iter_mut().for_each(|(_, mut ss)| {
         let obs_point = ss.observer_point;
-
-        // q_floor.par_iter(32).for_each(&pool, |(t_floor, _, _)| {
 
         for (_, sensor) in ss.sensors.iter_mut().enumerate() {
             //Clean sensor
@@ -30,45 +26,32 @@ pub fn detect_sensor_collision(
             let lx2 = obs_point.x();
             let ly2 = obs_point.y();
 
-            // if lx2 <= gd.map_data.x1 && ly2 <= gd.map_data.y1 
-            //     || lx2 >= gd.map_data.x2 && ly2 >= gd.map_data.x2 {
-            //     // Object out of the map
-            //     sensor.detected = SensorDetectedEnum::FLOOR;
-            //     sensor.distance = 0f32;
-            //     sensor.end_point = obs_point.clone();
-            // } else{
+            q_floor.iter().for_each(|(t_floor, _, _)| {
+                //Use floor position aligned to the center
+                let sx = t_floor.translation.x() - HALF_TILE_SIZE;
+                let sy = t_floor.translation.y() - HALF_TILE_SIZE;
+                let sw = TILE_SIZE;
+                let sh = TILE_SIZE;
 
-                q_floor.iter().for_each(|(t_floor, _, _)| {
-                // q_floor.par_iter(32).for_each(&pool, |(t_floor, _, _)| {
-                    //Use floor position aligned to the center
-                    let sx = t_floor.translation.x() - HALF_TILE_SIZE;
-                    let sy = t_floor.translation.y() - HALF_TILE_SIZE;
-                    let sw = TILE_SIZE;
-                    let sh = TILE_SIZE;
-    
-                    // Optimize serach using only tiles near the observer
-                    if inside_circle(obs_point.x(), obs_point.y(), SENSOR_REACH * 2f32, sx, sy) {
-                        let contacts = line_square(lx1, ly1, lx2, ly2, sx, sy, sw, sh);
-    
-                        if !contacts.is_empty() {
-                            contacts.iter().for_each(|(x, y)| {
-                                let calc_dist = ((obs_point.x() - x).powf(2.0)
-                                    + (obs_point.y() - y).powf(2.0))
-                                .sqrt();
-    
-                                if calc_dist < sensor.distance {
-                                    sensor.detected = SensorDetectedEnum::FLOOR;
-                                    sensor.distance = calc_dist;
-                                    sensor.end_point = Vec2::new(*x, *y);
-                                }
-                            });
-                        }
+                // Optimize serach using only tiles near the observer
+                if inside_circle(obs_point.x(), obs_point.y(), SENSOR_REACH * 2f32, sx, sy) {
+                    let contacts = line_square(lx1, ly1, lx2, ly2, sx, sy, sw, sh);
+
+                    if !contacts.is_empty() {
+                        contacts.iter().for_each(|(x, y)| {
+                            let calc_dist = ((obs_point.x() - x).powf(2.0)
+                                + (obs_point.y() - y).powf(2.0))
+                            .sqrt();
+
+                            if calc_dist < sensor.distance {
+                                sensor.detected = SensorDetectedEnum::FLOOR;
+                                sensor.distance = calc_dist;
+                                sensor.end_point = Vec2::new(*x, *y);
+                            }
+                        });
                     }
-                });                
-
-            // }
-
-
+                }
+            });
         }
     });
 }

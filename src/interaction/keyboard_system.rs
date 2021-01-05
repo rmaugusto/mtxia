@@ -1,11 +1,11 @@
 use bevy::{
-    ecs::{Query, Res, ResMut},
+    ecs::{Query, Res},
     input::Input,
     prelude::{KeyCode, Transform},
 };
 
 use crate::{
-    fish::{self, moviment_system, Fish, TurnFish},
+    fish::{self, Fish, TurnFish},
     shared::config::Config,
 };
 
@@ -14,7 +14,7 @@ pub fn keyboard_input_system(
     config: Res<Config>,
     mut fish_query: Query<(&mut Fish, &mut Transform)>,
 ) {
-    if config.fish.keyboard {
+    if config.general.keyboard {
         for (mut fish, mut t) in fish_query.iter_mut() {
             if fish.selected {
                 if keyboard_input.pressed(KeyCode::Up) {
@@ -26,11 +26,11 @@ pub fn keyboard_input_system(
                 }
 
                 if keyboard_input.just_released(KeyCode::Left) {
-                    fish::moviment_system::turn_fish(&TurnFish::LEFT, &mut t, &mut fish);
+                    fish::moviment_system::turn_fish(&config, &TurnFish::LEFT, &mut t, &mut fish);
                 }
 
                 if keyboard_input.just_released(KeyCode::Right) {
-                    fish::moviment_system::turn_fish(&TurnFish::RIGHT, &mut t, &mut fish);
+                    fish::moviment_system::turn_fish(&config, &TurnFish::RIGHT, &mut t, &mut fish);
                 }
             }
         }

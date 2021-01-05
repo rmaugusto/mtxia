@@ -1,4 +1,7 @@
-use std::fs::{self};
+use std::{
+    collections::HashMap,
+    fs::{self},
+};
 
 use serde::{Deserialize, Serialize};
 
@@ -11,26 +14,45 @@ pub struct FishConfig {
     pub energy: f32,
     pub render_sensor: bool,
     pub energy_inc: f32,
-    pub keyboard: bool
+    pub energy_to_turn: f32,
+    pub energy_to_walk: f32,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct GeneralConfig {
     pub time_speed: f32,
-    pub state_path: String,
-    pub headless: bool
+    pub keyboard: bool,
+    pub headless: bool,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum ModeEnum {
     LEARN,
     RUN,
-    DISABLED
+    DISABLED,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub enum InputLayerEnum {
+    SENSORS,
+    SPEED,
+    ENERGY,
+    FITNESS,
+    AGE,
+    DISTANCE,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct MethodAiConfig {
+    pub name: String,
+    pub config: HashMap<String, String>,
+}
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct AiConfig {
-    pub mode: ModeEnum
+    pub state_path: String,
+    pub mode: ModeEnum,
+    pub input_vars: Vec<InputLayerEnum>,
+    pub method: MethodAiConfig,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]

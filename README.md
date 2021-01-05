@@ -32,11 +32,13 @@ Stage 4:
  - [X] Create mutiples fishes and keep best weight
  - [X] Serialize best generations results
  - [X] Deserialize results on fish creation
- - [X] Enhance panel display data
+ - [X] Enhanced panel display data
  - [X] Tunning collision performance
+ - [X] Save CSV summary on generation finish
 
 Stage 5:
+ - [ ] Add PyTorch with tch-rs
  - [ ] Learn speed up and down
- - [ ] Food
+ - [ ] Seek for food
 
 

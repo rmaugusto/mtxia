@@ -2,14 +2,17 @@ use bevy::prelude::*;
 use rand::Rng;
 
 use crate::{
-    ai::ai_processor_factory::create_ai_processor,
+    ai::ai_processor_factory::create_brain,
     ground::WaterTile,
     sensor::SensorSet,
-    shared::{config::Config, gamedata::GameData},
+    shared::{
+        config::{Config, ModeEnum},
+        gamedata::GameData,
+    },
     startup::InternalAssets,
 };
 
-use super::{AnimationEntity, AnimationTimer, Fish};
+use super::{AnimationEntity, AnimationTimer, Fish, FishAlive};
 extern crate tiled;
 
 pub(crate) fn create_fishes(
@@ -20,7 +23,6 @@ pub(crate) fn create_fishes(
     q_water: Query<(&Transform, &WaterTile)>,
     q_fish: Query<(&Fish)>,
 ) {
-
     if !gd.create_generation {
         return;
     }
@@ -36,10 +38,13 @@ pub(crate) fn create_fishes(
     if q_fish.iter().len() == 0 {
         to_create = config.fish.count as usize;
         gd.current_generation += 1;
-        config.fish.energy += config.fish.energy_inc;
+
+        if config.ai.mode == ModeEnum::LEARN {
+            config.fish.energy += config.fish.energy_inc;
+        }
+
         println!("Creating new generation: {}", gd.current_generation);
         gd.create_generation = false;
-
     }
 
     // Random angle
@@ -47,15 +52,11 @@ pub(crate) fn create_fishes(
 
     // Random initial position
     let cur_gen: i32 = gd.current_generation / 10;
-    let water_idx = (cur_gen % (water_translator_ref.len() as i32 - 1)) as usize;
+    // let water_idx = (cur_gen % (water_translator_ref.len() as i32 - 1)) as usize;
     // Random initial position
     let water_idx = rng.gen_range(0, water_translator_ref.len());
 
-
-
     (0..to_create).for_each(|i| {
-
-
         let mut transform = Transform::default();
         transform.scale = Vec3::splat(1.2);
         transform.rotate(Quat::from_rotation_z(angle));
@@ -65,14 +66,20 @@ pub(crate) fn create_fishes(
             .spawn(SpriteSheetComponents {
                 texture_atlas: assets.fish.clone(),
                 transform: transform,
+                sprite: TextureAtlasSprite{
+                    index: 6,
+                    ..Default::default()
+                },
                 ..Default::default()
             })
-            .with( Fish::new(
+            .with(Fish::new(
                 i as i32,
                 config.fish.speed,
                 config.fish.energy,
-                create_ai_processor(),
+                create_brain(&config),
             ))
+            .with(FishAlive {
+            })
             .with(AnimationEntity {
                 reverse_index: false,
             })

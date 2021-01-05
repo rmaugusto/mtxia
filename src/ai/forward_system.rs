@@ -17,20 +17,70 @@ pub(crate) fn forward_system(
 ) {
     if config.ai.mode != ModeEnum::DISABLED {
         for (mut fish, ss, _, mut t) in q_fishes.iter_mut() {
-            let mut other_input_data = vec![fish.energy as f64, config.fish.speed as f64];
+            let mut input_data: Vec<f64> = Vec::new();
 
-            let distances: Vec<f64> = ss.sensors.iter().map(|s| s.distance as f64).collect();
+            if config
+                .ai
+                .input_vars
+                .contains(&crate::shared::config::InputLayerEnum::SENSORS)
+            {
+                let distances: Vec<f64> = ss.sensors.iter().map(|s| s.distance as f64).collect();
+                input_data.extend(distances);
+            }
 
-            other_input_data.extend(distances);
+            if config
+                .ai
+                .input_vars
+                .contains(&crate::shared::config::InputLayerEnum::SPEED)
+            {
+                input_data.push(fish.speed as f64);
+            }
 
-            let output = fish.ai_processor.forward(other_input_data);
+            if config
+                .ai
+                .input_vars
+                .contains(&crate::shared::config::InputLayerEnum::ENERGY)
+            {
+                input_data.push(fish.energy as f64);
+            }
+
+            if config
+                .ai
+                .input_vars
+                .contains(&crate::shared::config::InputLayerEnum::FITNESS)
+            {
+                input_data.push(fish.fitness() as f64);
+            }
+
+            if config
+                .ai
+                .input_vars
+                .contains(&crate::shared::config::InputLayerEnum::AGE)
+            {
+                input_data.push(fish.age() as f64);
+            }
+
+            if config
+                .ai
+                .input_vars
+                .contains(&crate::shared::config::InputLayerEnum::DISTANCE)
+            {
+                input_data.push(fish.distance as f64);
+            }
+
+            let output = fish.brain.nn_forward(input_data);
 
             if output[0] {
-                fish::moviment_system::turn_fish(&fish::TurnFish::LEFT, &mut t, &mut fish);
+                fish::moviment_system::turn_fish(&config, &fish::TurnFish::LEFT, &mut t, &mut fish);
             }
 
             if output[1] {
-                fish::moviment_system::turn_fish(&fish::TurnFish::RIGHT, &mut t, &mut fish);
+                fish::moviment_system::turn_fish(
+                    &config,
+                    &fish::TurnFish::RIGHT,
+                    &mut t,
+                    &mut fish,
+                );
             }
         }
     }

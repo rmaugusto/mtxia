@@ -66,10 +66,10 @@ fn main() {
         .add_startup_stage_after("LOAD_GROUND", "CREATE_FISH")
         .add_startup_stage_after("CREATE_FISH", "CREATE_SENSOR")
         .add_startup_stage_after("CREATE_SENSOR", "CREATE_PANEL")
-        .add_stage_after(stage::PRE_UPDATE, "UPDATE_SENSOR")
+        .add_stage_after(stage::UPDATE, "MOVE_FISH")
+        .add_stage_after("MOVE_FISH", "UPDATE_SENSOR")
         .add_stage_after("UPDATE_SENSOR", "DETECT_SENSOR")
         .add_stage_after("DETECT_SENSOR", "UPDATE_RENDER_SENSOR")
-        .add_stage_after("DETECT_SENSOR", "UPDATE_AI_FORWARD")
         .add_stage_after("DETECT_SENSOR", "COLLISION_SYSTEM")
         //Create events
         // .add_event::<FishDiedEvent>()

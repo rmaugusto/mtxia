@@ -1,17 +1,15 @@
-use std::fs;
+//! This is an implementation of Neural Network with no framework using Relu for activation
+
+use std::{collections::HashMap, fs};
 
 use rand::{seq::IteratorRandom, thread_rng, Rng};
 
 use serde::{Deserialize, Serialize};
 
-use super::{AiAction, AiProcessor};
+use super::AiProcessor;
 
 const BIAS: usize = 1;
-const HIDDEN_LAYERS: usize = 1;
-const INPUT_NEURONS: usize = 13;
-const HIDDEN_NEUROS: usize = 13;
-const OUTPUT_NEUROS: usize = 2;
-const INITIAL_WEIGHT_RATE: f64 = 1f64;
+const OUTPUT_NEURONS: usize = 2;
 
 #[derive(Serialize, Deserialize)]
 struct Neuron {
@@ -103,28 +101,51 @@ fn relu(x: f64) -> f64 {
         }
     }
 }
-pub struct NN_Manual_Relu {
+pub struct NfRelu01 {
     nn: NeuralNetwork,
+    config: HashMap<String, String>,
 }
 
-impl<'a> NN_Manual_Relu {
-    pub fn create() -> Self {
+impl<'a> NfRelu01 {
+    pub fn create(_config: HashMap<String, String>) -> Self {
+        let input_neurons: usize = _config
+            .get("input_neurons")
+            .unwrap_or(&String::from("1"))
+            .parse()
+            .expect("Error parsing");
+        let hidden_layers: usize = _config
+            .get("hidden_layers")
+            .unwrap_or(&String::from("1"))
+            .parse()
+            .expect("Error parsing");
+        let hidden_neurons: usize = _config
+            .get("hidden_neurons")
+            .unwrap_or(&String::from("1"))
+            .parse()
+            .expect("Error parsing");
         let mut _nn = NeuralNetwork::create(
-            INPUT_NEURONS + BIAS,
-            HIDDEN_LAYERS,
-            HIDDEN_NEUROS + BIAS,
-            OUTPUT_NEUROS,
+            input_neurons + BIAS,
+            hidden_layers,
+            hidden_neurons + BIAS,
+            OUTPUT_NEURONS,
         );
 
-        NN_Manual_Relu { nn: _nn }
+        NfRelu01 {
+            nn: _nn,
+            config: _config,
+        }
     }
 }
 
-impl AiProcessor for NN_Manual_Relu {
-    fn forward(&mut self, input: Vec<f64>) -> Vec<bool> {
-        //     //Input less BIAS
-        if self.nn.input.neurons.len() - BIAS != input.len() {
-            panic!("Size of input must equals size of Neurons - BIAS")
+impl AiProcessor for NfRelu01 {
+    fn nn_forward(&mut self, input: Vec<f64>) -> Vec<bool> {
+        //Input less BIAS
+        if self.nn.input.neurons.len() - 1 != input.len() {
+            panic!(
+                "Size of input must equals size of Neurons - BIAS, input-neurons: {}, input: {}. Maybe you are reading old state after change yaml config.",
+                self.nn.input.neurons.len(),
+                input.len()
+            )
         }
 
         if self.nn.hidden_layers.len() == 0 {
@@ -189,10 +210,6 @@ impl AiProcessor for NN_Manual_Relu {
         self.nn = serde_yaml::from_str(&contents).expect("Error parsing yaml");
     }
 
-    fn get_name(&self) -> String {
-        "NN_Manual_Relu".into()
-    }
-
     fn random_weights(&mut self) {
         self.nn
             .input
@@ -246,5 +263,9 @@ impl AiProcessor for NN_Manual_Relu {
             .choose_multiple(&mut rng_layers, n_neurons)
             .iter_mut()
             .for_each(|n| n.add_random_weights());
+    }
+
+    fn get_name(&self) -> String {
+        "NfRelu01".into()
     }
 }

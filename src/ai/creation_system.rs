@@ -11,10 +11,11 @@ pub(crate) fn create_ai(
     config: Res<Config>,
     mut q_unlocked_objs: Query<Without<FishAi, (Entity, &mut Fish)>>,
 ) {
+    let mut idx = 0;
     for (e, mut f) in q_unlocked_objs.iter_mut() {
-        let result_dir = format!("{}{}", config.general.state_path, f.ai_processor.get_name());
+        let result_dir = format!("{}{}", config.ai.state_path, f.brain.get_name());
 
-        let mut file_idx = (f.index % (BEST_RESULTS_SAVED_COUNT as i32 )) as usize;
+        let mut file_idx = (idx % (BEST_RESULTS_SAVED_COUNT as i32 )) as usize;
 
         // If Ai in run mode use only the best result
         if config.ai.mode == ModeEnum::RUN {
@@ -26,17 +27,19 @@ pub(crate) fn create_ai(
 
         if best_path.exists() {
             // Load best fish stored if exists
-            f.ai_processor.load(best_path);
+            f.brain.load(best_path);
         }else{
             // Generate random data if not exists
-            f.ai_processor.random_weights();
+            f.brain.random_weights();
         }
         
-        if f.index >= BEST_RESULTS_SAVED_COUNT && config.ai.mode == ModeEnum::LEARN {
+        if idx >= BEST_RESULTS_SAVED_COUNT && config.ai.mode == ModeEnum::LEARN {
             // Apply random value over loaded data
-            f.ai_processor.modify_random_weights();
+            f.brain.modify_random_weights();
         }
 
         commands.insert_one(e, FishAi {});
+
+        idx += 1;
     }
 }

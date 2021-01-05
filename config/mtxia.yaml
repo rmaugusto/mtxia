@@ -1,26 +1,53 @@
 general:
-    # Where save learning of ai
-    state_path: "state/"
     # Time of speed (1x,1.4x,2x,..)
     time_speed: 1
+    # Render window
     headless: false
+    # Control using keyboard of selected item
+    keyboard: true
 fish:
     # Render fish render
     render_sensor: false
     # Fish Speed
-    speed: 100
+    speed: 120
     # Initial fish energy
-    energy: 600
+    energy: 10000
+    # Energy used to turn around (each cycle)
+    energy_to_turn: 30
+    # Energy used to walk forward (each cycle)
+    energy_to_walk: 1
     # Fish count
-    count: 10
+    count: 100
     # Sensor count distributed over range
     sensors: 11
     # Range of sensor, -range to +range
     range: 65.00
     # Initial energy to increment on new generation
-    energy_inc: 10.00
-    # Control using keyboard
-    keyboard: true
+    energy_inc: 1.00
 ai:
+    # Where save learning of ai
+    state_path: "state/"
     # Execution mode LEARN/RUN/DISABLED
     mode: LEARN
+    # What will input in AI
+    # - SENSORS - Each sensor distance  (n variables according to sensor count)
+    # - SPEED - Speed (one variable)
+    # - ENERGY - Remaining energy (one variable)
+    # - FITNESS - Calculated fitness (one variable)
+    # - AGE - Age fish is alive
+    # - DISTANCE - Distance performed considering speed
+    input_vars:
+        - SENSORS
+        # - SPEED
+        # - ENERGY
+        # - FITNESS
+        # - AGE
+        # - DISTANCE
+    # Ai method of learning
+    method:
+        # Tch01 - 
+        # NfRelu01 - 
+        name: Tch01
+        config:
+            hidden_layers: 1
+            hidden_neurons: 20
